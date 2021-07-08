@@ -1,0 +1,26 @@
+/* #pragma kernel ProceduralTerrain
+#pragma enable_d3d11_debug_symbols
+#include "MCHeader.hlsl"
+#include "FastNoiseLite.hlsl"
+
+
+StructuredBuffer<int2> ChunkLocations;
+RWByteAddressBuffer ChunkData;
+[numthreads(CHUNK_HORIZONTAL_SPAN/4,CHUNK_VERTICAL_SPAN,CHUNK_HORIZONTAL_SPAN)]
+void ProceduralTerrain(uint3 groupThreadId : SV_GroupThreadID,uint3 groupId : SV_GroupID) {
+    uint block = 0;
+    int2 chunk = ChunkLocations[groupId.x];
+    for (int i=0;i<4;i++) {
+        uint3 cell = { groupThreadId.x*4+i,groupThreadId.y,groupThreadId.z };
+        for (int j=0;j<8;j++) {
+            float3 position = cell+vertexOrder[j];
+            float3 offset = { position.x/CHUNK_HORIZONTAL_SPAN,position.y/CHUNK_VERTICAL_SPAN,position.z/CHUNK_HORIZONTAL_SPAN};
+            fnlC
+            float sample1 = unlerp(-1, 1, noise(float2(offset.x + chunk.x, offset.z + chunk.y), CHUNK_HORIZONTAL_SPAN));
+            if ((position.y < 1) || (position.y < sample1 * 12 && sample2 < 0.7f)) {
+                block |= (byte)(1 << (j+(i*8)));
+            }
+            
+        }
+    }
+} */

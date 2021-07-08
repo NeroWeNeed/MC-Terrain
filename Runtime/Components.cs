@@ -66,11 +66,7 @@ namespace NeroWeNeed.Terrain
     
     public struct TerrainProducer : IComponentData { }
 
-    public struct ChunksToLoadBuffer : IBufferElementData
-    {
-        public int2 chunk;
-        public Entity chunkEntity;
-    }
+
 
     [Serializable]
     public struct TerrainMaterial : ISharedComponentData, IEquatable<TerrainMaterial>, IEquatable<Material>
@@ -100,5 +96,12 @@ namespace NeroWeNeed.Terrain
     public struct ChunkLoader : IComponentData
     {
         public int radius;
+    }
+    public struct TerrainSettings : IComponentData {
+        public BlobAssetReference<TerrainSettingsData> value;
+    }
+    public struct RuntimeTerrainSettings : ISystemStateComponentData
+    {
+        public BlobAssetReference<RuntimeTerrainSettingsData> value;
     }
 }

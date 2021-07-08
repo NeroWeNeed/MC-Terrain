@@ -53,16 +53,18 @@ Shader "NeroWeNeed/Terrain/Basic Terrain Material"
             // that it returns.
             Varyings vert(uint vertexId : SV_VertexID)
             {
+
                 // Declaring the output object (OUT) with the Varyings struct.
                 Varyings OUT;
                 // The TransformObjectToHClip function transforms vertex positions
                 // from object space to homogenous space
-
-                OUT.position = TransformObjectToHClip(Vertices[vertexId]);
-                OUT.normal = float4(TransformObjectToWorldNormal(Normals[vertexId]),1);
-                float3 v1 = cross(OUT.normal.xyz,float3(0,1,0));
-                float3 v2 = cross(OUT.normal.xyz,float3(0,0,1));
-                OUT.tangent = float4(TransformObjectToWorldDir(normalize(length(v1) > length(v2) ? v1 : v2)),1);
+                //OUT.position = float4(Vertices[vertexId],1);
+                OUT.position = float4(Vertices[vertexId],1);
+                OUT.normal = float4(Normals[vertexId],1);
+                float3 v1 = cross(OUT.normal.xyz,float3(0,0,1));
+                float3 v2 = cross(OUT.normal.xyz,float3(0,1,0));
+                OUT.tangent = length(v1) > length(v2) ? float4(v1,1) : float4(v2,-1);
+                //OUT.tangent = float4(TransformObjectToWorldDir(normalize(length(v1) > length(v2) ? v1 : v2)),1);
                 //OUT.positionHCS = float4(Vertices[vertexId],1);
                 // Returning the output.
                 return OUT;

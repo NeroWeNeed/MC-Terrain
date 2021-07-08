@@ -274,48 +274,112 @@ namespace NeroWeNeed.Terrain
     0x6201,  0x3304,  0x5102, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
-        /*         [MenuItem("Utility/Generate Tables")]
-                internal static void GenerateVertexDataIndexTable()
+        internal static readonly byte[] CellClassData = new byte[256] {
+            0x00, 0x01, 0x01, 0x03, 0x01, 0x03, 0x02, 0x04, 0x01, 0x02, 0x03, 0x04, 0x03, 0x04, 0x04, 0x03,
+    0x01, 0x03, 0x02, 0x04, 0x02, 0x04, 0x06, 0x0C, 0x02, 0x05, 0x05, 0x0B, 0x05, 0x0A, 0x07, 0x04,
+    0x01, 0x02, 0x03, 0x04, 0x02, 0x05, 0x05, 0x0A, 0x02, 0x06, 0x04, 0x0C, 0x05, 0x07, 0x0B, 0x04,
+    0x03, 0x04, 0x04, 0x03, 0x05, 0x0B, 0x07, 0x04, 0x05, 0x07, 0x0A, 0x04, 0x08, 0x0E, 0x0E, 0x03,
+    0x01, 0x02, 0x02, 0x05, 0x03, 0x04, 0x05, 0x0B, 0x02, 0x06, 0x05, 0x07, 0x04, 0x0C, 0x0A, 0x04,
+    0x03, 0x04, 0x05, 0x0A, 0x04, 0x03, 0x07, 0x04, 0x05, 0x07, 0x08, 0x0E, 0x0B, 0x04, 0x0E, 0x03,
+    0x02, 0x06, 0x05, 0x07, 0x05, 0x07, 0x08, 0x0E, 0x06, 0x09, 0x07, 0x0F, 0x07, 0x0F, 0x0E, 0x0D,
+    0x04, 0x0C, 0x0B, 0x04, 0x0A, 0x04, 0x0E, 0x03, 0x07, 0x0F, 0x0E, 0x0D, 0x0E, 0x0D, 0x02, 0x01,
+    0x01, 0x02, 0x02, 0x05, 0x02, 0x05, 0x06, 0x07, 0x03, 0x05, 0x04, 0x0A, 0x04, 0x0B, 0x0C, 0x04,
+    0x02, 0x05, 0x06, 0x07, 0x06, 0x07, 0x09, 0x0F, 0x05, 0x08, 0x07, 0x0E, 0x07, 0x0E, 0x0F, 0x0D,
+    0x03, 0x05, 0x04, 0x0B, 0x05, 0x08, 0x07, 0x0E, 0x04, 0x07, 0x03, 0x04, 0x0A, 0x0E, 0x04, 0x03,
+    0x04, 0x0A, 0x0C, 0x04, 0x07, 0x0E, 0x0F, 0x0D, 0x0B, 0x0E, 0x04, 0x03, 0x0E, 0x02, 0x0D, 0x01,
+    0x03, 0x05, 0x05, 0x08, 0x04, 0x0A, 0x07, 0x0E, 0x04, 0x07, 0x0B, 0x0E, 0x03, 0x04, 0x04, 0x03,
+    0x04, 0x0B, 0x07, 0x0E, 0x0C, 0x04, 0x0F, 0x0D, 0x0A, 0x0E, 0x0E, 0x02, 0x04, 0x03, 0x0D, 0x01,
+    0x04, 0x07, 0x0A, 0x0E, 0x0B, 0x0E, 0x0E, 0x02, 0x0C, 0x0F, 0x04, 0x0D, 0x04, 0x0D, 0x03, 0x01,
+    0x03, 0x04, 0x04, 0x03, 0x04, 0x03, 0x0D, 0x01, 0x04, 0x0D, 0x03, 0x01, 0x03, 0x01, 0x01, 0x00
+        };
+
+        internal static readonly MarchingCubes.MCCellData[] CellData = {
+                    new MarchingCubes.MCCellData(0),
+                    new MarchingCubes.MCCellData(0x31,0,1,2),
+                    new MarchingCubes.MCCellData(0x62,0,1,2,3,4,5),
+                    new MarchingCubes.MCCellData(0x42,0,1,2,0,2,3),
+                    new MarchingCubes.MCCellData(0x53,0,1,4,1,3,4,1,2,3),
+                    new MarchingCubes.MCCellData(0x73,0,1,2,0,2,3,4,5,6),
+                    new MarchingCubes.MCCellData(0x93,0,1,2,3,4,5,6,7,8),
+                    new MarchingCubes.MCCellData(0x84,0,1,4,1,3,4,1,2,3,5,6,7),
+                    new MarchingCubes.MCCellData(0x84,0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7),
+                    new MarchingCubes.MCCellData(0xC4,0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+                    new MarchingCubes.MCCellData(0x64,0, 4, 5, 0, 1, 4, 1, 3, 4, 1, 2, 3),
+                    new MarchingCubes.MCCellData(0x64,0, 5, 4, 0, 4, 1, 1, 4, 3, 1, 3, 2),
+                    new MarchingCubes.MCCellData(0x64,0, 4, 5, 0, 3, 4, 0, 1, 3, 1, 2, 3),
+                    new MarchingCubes.MCCellData(0x64,0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5),
+                    new MarchingCubes.MCCellData(0x75,0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6),
+                    new MarchingCubes.MCCellData(0x95,0, 4, 5, 0, 3, 4, 0, 1, 3, 1, 2, 3, 6, 7, 8),
+                };
+        [MenuItem("Utility/Generate Tables")]
+        internal static void GenerateVertexDataIndexTable()
+        {
+            var indices = new List<int>();
+            var values = new List<ushort>();
+            int offset = 0;
+            for (int i = 0; i < CellClassData.Length; i++)
+            {
+                var vertexCount = CellData[CellClassData[i]].GetVertexCount();
+                for (int j = 0; j < vertexCount; j++)
                 {
-                    var indices = new List<int>();
-                    var values = new List<ushort>();
-                    int realIndex = 0;
-                    for (int i = 0; i < 256; i++)
-                    {
-                        int firstZero = 0;
-                        for (int j = 0; j < 12; j++)
-                        {
-                            if (vertexData[i * 12 + j] == 0)
-                            {
-                                firstZero = j;
-                                break;
-                            }
-                            else
-                            {
-                                values.Add(vertexData[i * 12 + j]);
-                            }
-                        }
-                        indices.Add(realIndex);
-                        realIndex += firstZero;
-                    }
-                    using var fs = File.CreateText("Assets/TableData.txt");
-
-                    fs.WriteLine($"static const min16uint vertexData[{values.Count}] = {{");
-                    for (int i = 0; i < values.Count; i++)
-                    {
-                        fs.WriteLine($"    {values[i]}{(i + 1 < values.Count ? "," : "")}");
-                    }
-                    fs.WriteLine("};");
-                    fs.WriteLine($"static const uint vertexLookupTable[{indices.Count}] = {{");
-                    for (int i = 0; i < indices.Count; i++)
-                    {
-                        fs.WriteLine($"    {indices[i]}{(i + 1 < indices.Count ? "," : "")}");
-                    }
-                    fs.WriteLine("};");
-
-
+                    values.Add(vertexData[i * 12 + j]);
                 }
-         */
+                indices.Add(offset);
+                offset += vertexCount;
+            }
+            using var fs = File.CreateText("Assets/TableData.txt");
+
+            fs.WriteLine($"static const min16uint vertexData[{values.Count}] = {{");
+            for (int i = 0; i < values.Count; i++)
+            {
+                fs.WriteLine($"    0x{values[i]:X}{(i + 1 < values.Count ? "," : "")}");
+            }
+            fs.WriteLine("};");
+            fs.WriteLine($"static const uint vertexLookupTable[{indices.Count}] = {{");
+            for (int i = 0; i < indices.Count; i++)
+            {
+                fs.WriteLine($"    {indices[i]}{(i + 1 < indices.Count ? "," : "")}");
+            }
+            fs.WriteLine("};");
+            /*                     var indices = new List<int>();
+                                var values = new List<ushort>();
+                                int realIndex = 0;
+                                for (int i = 0; i < 256; i++)
+                                {
+                                    int firstZero = 0;
+                                    for (int j = 0; j < 12; j++)
+                                    {
+                                        if (vertexData[i * 12 + j] == 0)
+                                        {
+                                            firstZero = j;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            values.Add(vertexData[i * 12 + j]);
+                                        }
+                                    }
+                                    indices.Add(realIndex);
+                                    realIndex += firstZero;
+                                }
+                                using var fs = File.CreateText("Assets/TableData.txt");
+
+                                fs.WriteLine($"static const min16uint vertexData[{values.Count}] = {{");
+                                for (int i = 0; i < values.Count; i++)
+                                {
+                                    fs.WriteLine($"    0x{values[i]:X}{(i + 1 < values.Count ? "," : "")}");
+                                }
+                                fs.WriteLine("};");
+                                fs.WriteLine($"static const uint vertexLookupTable[{indices.Count}] = {{");
+                                for (int i = 0; i < indices.Count; i++)
+                                {
+                                    fs.WriteLine($"    {indices[i]}{(i + 1 < indices.Count ? "," : "")}");
+                                }
+                                fs.WriteLine("};"); */
+
+
+        }
+
         [BurstCompile]
         internal unsafe struct UpdateBufferJob : IJob
         {
@@ -324,6 +388,7 @@ namespace NeroWeNeed.Terrain
             public NativeArray<MarchingCubeChunk> chunks;
             public NativeReference<Bounds> bounds;
             public int count;
+            public float cellScale;
             public void Execute()
             {
                 output.Clear();
@@ -339,25 +404,30 @@ namespace NeroWeNeed.Terrain
                     maximum = math.max(maximum, chunkLocations[i]);
                 }
                 bounds.Value = new Bounds(
-                    new Vector3((minimum.x + maximum.x) * 0.5f * MarchingCubes.ChunkSizeInCells, MarchingCubes.ChunkSizeInCells * 0.5f, (minimum.y + maximum.y) * 0.5f * MarchingCubes.ChunkSizeInCells),
-                    new Vector3(math.abs(minimum.x - maximum.x) * 0.5f * MarchingCubes.ChunkSizeInCells, MarchingCubes.ChunkSizeInCells, math.abs(minimum.y - maximum.y) * 0.5f * MarchingCubes.ChunkSizeInCells)
+                    new Vector3((minimum.x + maximum.x) * 0.5f * MarchingCubes.ChunkHorizontalSpanInCells, MarchingCubes.ChunkHorizontalSpanInCells * 0.5f, (minimum.y + maximum.y) * 0.5f * MarchingCubes.ChunkHorizontalSpanInCells) * cellScale,
+                    new Vector3(math.abs(minimum.x - maximum.x) * 0.5f * MarchingCubes.ChunkHorizontalSpanInCells, MarchingCubes.ChunkHorizontalSpanInCells, math.abs(minimum.y - maximum.y) * 0.5f * MarchingCubes.ChunkHorizontalSpanInCells) * cellScale
                 );
             }
         }
         private const string COMPUTE_SHADER_ASSET = "Packages/github.neroweneed.marching-cubes-terrain/ComputeBuffers/MarchingCubes.compute";
+        private static readonly uint[] InitialDrawArguments = new uint[] { 0, 1, 0, 0, 0 };
+        private static readonly uint[] InitialChunkArguments = new uint[] { 0 };
         private ComputeShader computeShader;
-        public static readonly int ChunkDataId = Shader.PropertyToID("_ChunkData");
-        public static readonly int ChunkCountId = Shader.PropertyToID("_ChunkCount");
-        public static readonly int CellScaleId = Shader.PropertyToID("_CellScale");
-        public static readonly int IsoValueId = Shader.PropertyToID("_IsoValue");
-        public static readonly int VericesId = Shader.PropertyToID("_Vertices");
-        public static readonly int NormalsId = Shader.PropertyToID("_Normals");
-        public static readonly int IndicesId = Shader.PropertyToID("_Indices");
+        public static readonly int ChunkDataId = Shader.PropertyToID("ChunkData");
+        public static readonly int CellScaleId = Shader.PropertyToID("CellScale");
+        public static readonly int IsoValueId = Shader.PropertyToID("IsoValue");
+        public static readonly int VericesId = Shader.PropertyToID("Vertices");
+        public static readonly int NormalsId = Shader.PropertyToID("Normals");
+        public static readonly int IndicesId = Shader.PropertyToID("Indices");
+        public static readonly int DrawArgumentsId = Shader.PropertyToID("DrawArguments");
+        public static readonly int ChunkArgumentsId = Shader.PropertyToID("ChunkArguments");
         public GraphicsBuffer ChunkData { get; private set; }
         public GraphicsBuffer VertexBuffer { get; private set; }
         public ComputeBuffer NormalBuffer { get; private set; }
         public GraphicsBuffer IndexBuffer { get; private set; }
-        
+        public ComputeBuffer DrawArguments { get; private set; }
+        public ComputeBuffer ChunkArguments { get; private set; }
+
         private TerrainChunkSystem terrainChunkSystem;
         private JobHandle ChunkDataHandle;
         public NativeList<byte> chunkDataBuffer;
@@ -369,12 +439,17 @@ namespace NeroWeNeed.Terrain
         protected override void OnCreate()
         {
             computeShader = Addressables.LoadAssetAsync<ComputeShader>(COMPUTE_SHADER_ASSET).WaitForCompletion();
-            //kernal = computeShader.FindKernel("CSMain");
             kernal = computeShader.FindKernel("MarchingCubes");
             chunkDataBuffer = new NativeList<byte>(8, Allocator.Persistent);
             terrainBounds = new NativeReference<Bounds>(Allocator.Persistent);
             terrainChunkSystem = World.GetOrCreateSystem<TerrainChunkSystem>();
             MaterialProperties = new MaterialPropertyBlock();
+            DrawArguments = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments | ComputeBufferType.Structured);
+            computeShader.SetBuffer(kernal, DrawArgumentsId, DrawArguments);
+            ChunkArguments = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Structured);
+
+            ChunkArguments.SetData(InitialChunkArguments);
+            computeShader.SetBuffer(kernal, ChunkArgumentsId, ChunkArguments);
             RequireSingletonForUpdate<TerrainIsoValue>();
             RequireSingletonForUpdate<TerrainCellScale>();
 
@@ -383,105 +458,84 @@ namespace NeroWeNeed.Terrain
         {
             terrainChunkSystem.WaitForCompletion();
             ChunkDataHandle.Complete();
+
             var version = terrainChunkSystem.GetLoadedChunkSetVersion();
             if (lastVersion != version)
             {
                 int chunkCount = (chunkDataBuffer.Length / (sizeof(MarchingCubeChunk) + sizeof(int2)));
                 if (ChunkData == null)
                 {
-                    ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw , chunkDataBuffer.Length / 4, 4);
-                    //ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length * sizeof(FullMarchingCubeChunk), 1);
-                    //computeShader.SetConstantBuffer("ChunkData", ChunkData, 0, chunkDataBuffer.Length);
-                    computeShader.SetBuffer(kernal, "ChunkData", ChunkData);
+                    ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
+                    computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
                 }
                 else if (ChunkData.count < chunkDataBuffer.Length)
                 {
                     ChunkData.Release();
                     ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
-                    //computeShader.SetConstantBuffer("ChunkData", ChunkData, 0, chunkDataBuffer.Length);
-                    computeShader.SetBuffer(kernal, "ChunkData", ChunkData);
+                    computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
                 }
                 if (VertexBuffer == null)
                 {
-                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured | GraphicsBuffer.Target.Counter, chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12), sizeof(float3));
-                    MaterialProperties.SetBuffer("Vertices", VertexBuffer);
-                    computeShader.SetBuffer(kernal, "Vertices", VertexBuffer);
+                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
+                    MaterialProperties.SetBuffer(VericesId, VertexBuffer);
+                    computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
                 }
-                else if (VertexBuffer.count < chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12))
+                else if (VertexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
                 {
                     VertexBuffer.Release();
-                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured | GraphicsBuffer.Target.Counter, chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12), sizeof(float3));
-                    MaterialProperties.SetBuffer("Vertices", VertexBuffer);
-                    computeShader.SetBuffer(kernal, "Vertices", VertexBuffer);
+                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
+                    MaterialProperties.SetBuffer(VericesId, VertexBuffer);
+                    computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
                 }
                 if (NormalBuffer == null)
                 {
-                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
-                    MaterialProperties.SetBuffer("Normals", NormalBuffer);
-                    computeShader.SetBuffer(kernal, "Normals", NormalBuffer);
+                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
+                    MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
+                    computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
                 }
-                else if (NormalBuffer.count < chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12))
+                else if (NormalBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
                 {
                     NormalBuffer.Release();
-                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
-                    MaterialProperties.SetBuffer("Normals", NormalBuffer);
-                    computeShader.SetBuffer(kernal, "Normals", NormalBuffer);
+                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
+                    MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
+                    computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
                 }
                 if (IndexBuffer == null)
                 {
-                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured | GraphicsBuffer.Target.Counter, chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 15), sizeof(uint));
-                    MaterialProperties.SetBuffer("Indices", IndexBuffer);
-                    computeShader.SetBuffer(kernal, "Indices", IndexBuffer);
+                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
+                    computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
                 }
-                else if (IndexBuffer.count < chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 15))
+                else if (IndexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15))
                 {
                     IndexBuffer.Release();
-                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured | GraphicsBuffer.Target.Counter, chunkCount * (MarchingCubes.ChunkCubeSizeInCells * 15), sizeof(uint));
-                    MaterialProperties.SetBuffer("Indices", IndexBuffer);
-                    computeShader.SetBuffer(kernal, "Indices", IndexBuffer);
+                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
+                    computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
                 }
 
-                VertexBuffer.SetCounterValue(0);
-                NormalBuffer.SetCounterValue(0);
-                IndexBuffer.SetCounterValue(0);
-                ChunkData.SetCounterValue(0);
-
                 ChunkData.SetData<byte>(chunkDataBuffer);
-                computeShader.SetInt("_ChunkCount", chunkCount);
+                DrawArguments.SetData(InitialDrawArguments);
+                ChunkArguments.SetData(InitialChunkArguments);
                 computeShader.SetFloat(IsoValueId, GetSingleton<TerrainIsoValue>());
                 computeShader.SetFloat(CellScaleId, GetSingleton<TerrainCellScale>());
-                //computeShader.Dispatch(computeShader.FindKernel("CSMain"), 1, 16, 9);
-                //computeShader.Dispatch(kernal, 1, 1,1);
-                //computeShader.Dispatch(computeShader.FindKernel("CSMain"), 1,1,1);
-
-                computeShader.Dispatch(kernal, chunkCount, 16, 1);
+                computeShader.Dispatch(kernal, chunkCount, 1, 1);
                 lastVersion = version;
-            }
-        }
-        private void SumChunk()
-        {
-            var ptr = (byte*)chunkDataBuffer.GetUnsafeReadOnlyPtr();
-            Debug.Log(sizeof(MarchingCubeChunk));
-            for (int i = 0; i < (sizeof(MarchingCubeChunk)); i++)
-            {
-
-                Debug.Log($"{i}: {ptr[i]}");
-
-
             }
 
         }
         protected override void OnDestroy()
         {
+
             chunkDataBuffer.Dispose();
             VertexBuffer?.Release();
             NormalBuffer?.Release();
             ChunkData?.Release();
             IndexBuffer?.Release();
+            DrawArguments?.Release();
+            ChunkArguments?.Release();
             terrainBounds.Dispose();
             base.OnDestroy();
         }
-        public JobHandle SetChunkData(NativeArray<int2> chunkLocations, NativeArray<MarchingCubeChunk> chunks, int count, JobHandle dependency = default)
+        public JobHandle SetChunkData(NativeArray<int2> chunkLocations, NativeArray<MarchingCubeChunk> chunks, int count, float cellScale, JobHandle dependency = default)
         {
 
             return new UpdateBufferJob
@@ -490,9 +544,11 @@ namespace NeroWeNeed.Terrain
                 chunks = chunks,
                 chunkLocations = chunkLocations,
                 count = count,
-                bounds = terrainBounds
+                bounds = terrainBounds,
+                cellScale = cellScale
             }.Schedule(dependency);
         }
+        public bool IsCompleted() => terrainChunkSystem.IsCompleted() && ChunkDataHandle.IsCompleted;
         public void AddChunkDataJobHandle(JobHandle handle)
         {
             ChunkDataHandle = JobHandle.CombineDependencies(ChunkDataHandle, handle);

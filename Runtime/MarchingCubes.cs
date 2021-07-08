@@ -62,21 +62,25 @@ namespace NeroWeNeed.Terrain
             }
         }
 
-        public const int ChunkSizeInCells = 16;
-        public const int ChunkSizeInBits = ChunkSizeInCells * 8;
-        public const int ChunkLayerSizeInCells = ChunkSizeInCells * ChunkSizeInCells;
+        public const int ChunkHorizontalSpanInCells = 8;
+        public const int ChunkVerticalSpanInCells = 16;
+        public const int ChunkHorizontalSpanInBits = ChunkHorizontalSpanInCells * 8;
+        public const int ChunkVerticalSpanInBits = ChunkVerticalSpanInCells * 8;
+        public const int ChunkLayerSizeInCells = ChunkHorizontalSpanInCells * ChunkHorizontalSpanInCells;
         public const int ChunkLayerSizeInBits = ChunkLayerSizeInCells * 8;
-        public const int ChunkCubeSizeInCells = ChunkSizeInCells * ChunkSizeInCells * ChunkSizeInCells;
-        public const int ChunkCubeSizeInBits = ChunkCubeSizeInCells * 8;
-        public const int PaddedChunkSizeInCells = ChunkSizeInCells + 2;
-        public const int PaddedChunkSizeInBits = PaddedChunkSizeInCells * 8;
-        public const int PaddedChunkLayerSizeInCells = PaddedChunkSizeInCells * PaddedChunkSizeInCells;
+        public const int ChunkBoxSizeInCells = ChunkHorizontalSpanInCells * ChunkHorizontalSpanInCells * ChunkVerticalSpanInCells;
+        public const int ChunkBoxSizeInBits = ChunkBoxSizeInCells * 8;
+        public const int PaddedChunkHorizontalSpanInCells = ChunkHorizontalSpanInCells + 2;
+        public const int PaddedChunkVerticalSpanInCells = ChunkVerticalSpanInCells + 2;
+        public const int PaddedChunkHorizontalSpanInBits = PaddedChunkHorizontalSpanInCells * 8;
+        public const int PaddedChunkVerticalSpanInBits = PaddedChunkVerticalSpanInCells * 8;
+        public const int PaddedChunkLayerSizeInCells = PaddedChunkHorizontalSpanInCells * PaddedChunkHorizontalSpanInCells;
         public const int PaddedChunkLayerSizeInBits = PaddedChunkLayerSizeInCells * 8;
-        public const int PaddedChunkCubeSizeInCells = PaddedChunkSizeInCells * PaddedChunkSizeInCells * PaddedChunkSizeInCells;
-        public const int PaddedChunkCubeSizeInBits = PaddedChunkCubeSizeInCells * 8;
+        public const int PaddedChunkBoxSizeInCells = PaddedChunkHorizontalSpanInCells * PaddedChunkHorizontalSpanInCells * PaddedChunkVerticalSpanInCells;
+        public const int PaddedChunkBoxSizeInBits = PaddedChunkBoxSizeInCells * 8;
         public static readonly Bounds ChunkBounds = new Bounds(
-            new Vector3(ChunkSizeInCells / 2, ChunkSizeInCells / 2, ChunkSizeInCells / 2),
-            new Vector3(ChunkSizeInCells / 2, ChunkSizeInCells / 2, ChunkSizeInCells / 2)
+            new Vector3(ChunkHorizontalSpanInCells / 2, ChunkHorizontalSpanInCells / 2, ChunkHorizontalSpanInCells / 2),
+            new Vector3(ChunkHorizontalSpanInCells / 2, ChunkHorizontalSpanInCells / 2, ChunkHorizontalSpanInCells / 2)
         );
         internal static readonly int3 TriangleWindingOrder = new int3(0, 2, 1);
         /* public static readonly int3[] VertexOrder = {
@@ -434,185 +438,12 @@ namespace NeroWeNeed.Terrain
             }
 
         }
-        [BurstDiscard]
-        public static JobHandle GenerateMesh(NativeArray<MarchingCubeChunk> chunks, out Mesh.MeshDataArray meshDataArray, JobHandle dependsOn = default)
-        {
-            var cellOffsets = new NativeArray<int2>(chunks.Length * ChunkCubeSizeInCells, Allocator.TempJob);
-            var descriptor = MCCubeVertexInfo.GetVertexAttributeDescriptor(Allocator.TempJob);
-            var meshInfo = new NativeArray<MCChunkInfo>(chunks.Length, Allocator.TempJob);
-            meshDataArray = Mesh.AllocateWritableMeshData(chunks.Length);
 
-            var initJob = new MarchingCubesJobInit
-            {
-                chunks = chunks,
-                meshDataArray = meshDataArray,
-                cellOffsets = cellOffsets,
-                vertexAttributeDescriptor = descriptor,
-                chunkInfo = meshInfo
-            }.Schedule(chunks.Length, 1, dependsOn);
-            var job = new MarchingCubesJob
-            {
-                cubeChunks = chunks,
-                cellOffsets = cellOffsets,
-                meshDataArray = meshDataArray
-            }.Schedule(chunks.Length, ChunkCubeSizeInCells, initJob);
-            //.Schedule(chunks.Length * TotalChunkSizeInCells, 1, initJob);
-            var handle1 = cellOffsets.Dispose(job);
-            var handle2 = descriptor.Dispose(job);
-            var handle3 = meshInfo.Dispose(job);
-            return JobHandle.CombineDependencies(handle1, handle2, handle3);
-        }
-    }
-    //Initializes Mesh data for chunks.
-    [BurstCompile]
-    public struct MarchingCubesJobInit : IJobParallelFor
-    {
-
-        [ReadOnly]
-        public NativeArray<MarchingCubeChunk> chunks;
-        public Mesh.MeshDataArray meshDataArray;
-        /// <summary>
-        /// Offset data for writing
-        /// </summary>
-        [WriteOnly]
-        [NativeDisableParallelForRestriction]
-        public NativeArray<int2> cellOffsets;
-        [WriteOnly]
-        public NativeArray<MCChunkInfo> chunkInfo;
-        [ReadOnly]
-        public NativeArray<VertexAttributeDescriptor> vertexAttributeDescriptor;
-
-        public void Execute(int index)
-        {
-
-            var chunk = chunks[index];
-            int triCount = 0;
-            int vertCount = 0;
-            for (int y = 0; y < MarchingCubes.ChunkSizeInCells; y++)
-            {
-                for (int z = 0; z < MarchingCubes.ChunkSizeInCells; z++)
-                {
-                    for (int x = 0; x < MarchingCubes.ChunkSizeInCells; x++)
-                    {
-                        var cubeCase = chunk[x + 1, y + 1, z + 1];
-                        MarchingCubes.GetCellData(MarchingCubes.CellClassData[cubeCase], out var cellData);
-                        cellOffsets[MarchingCubes.ChunkCubeSizeInCells * index + y * MarchingCubes.ChunkSizeInCells * MarchingCubes.ChunkSizeInCells + z * MarchingCubes.ChunkSizeInCells + x] = math.int2(triCount, vertCount);
-                        triCount += cellData.GetTriangleCount();
-                        vertCount += cellData.GetVertexCount();
-                    }
-                }
-            }
-            var meshData = meshDataArray[index];
-            meshData.SetIndexBufferParams(triCount * 3, IndexFormat.UInt16);
-            meshData.SetVertexBufferParams(vertCount, vertexAttributeDescriptor);
-            meshData.subMeshCount = 1;
-            chunkInfo[index] = new MCChunkInfo
-            {
-                triangleCount = triCount,
-                vertexCount = vertCount
-            };
-            meshData.SetSubMesh(0, new SubMeshDescriptor(0, triCount * 3)
-            {
-                bounds = new Bounds(new Vector3(MarchingCubes.ChunkSizeInCells * 0.5f, MarchingCubes.ChunkSizeInCells * 0.5f, MarchingCubes.ChunkSizeInCells * 0.5f), new Vector3(MarchingCubes.ChunkSizeInCells * 0.5f, MarchingCubes.ChunkSizeInCells * 0.5f, MarchingCubes.ChunkSizeInCells * 0.5f))
-            }, MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontRecalculateBounds);
-
-        }
     }
 
-    public struct MCCubeVertexInfo
-    {
-
-        public static NativeArray<VertexAttributeDescriptor> GetVertexAttributeDescriptor(Allocator allocator)
-        {
-            var r = new NativeArray<VertexAttributeDescriptor>(4, allocator, NativeArrayOptions.UninitializedMemory);
-            r[0] = new VertexAttributeDescriptor(VertexAttribute.Position, VertexAttributeFormat.Float32, 3);
-            r[1] = new VertexAttributeDescriptor(VertexAttribute.Normal, VertexAttributeFormat.Float32, 3);
-            r[2] = new VertexAttributeDescriptor(VertexAttribute.Color, VertexAttributeFormat.Float32, 4);
-            r[3] = new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2);
-            return r;
-        }
-        public float3 position;
-        public float3 normal;
-        public Color color;
-        public float2 uv;
-
-        public MCCubeVertexInfo(float3 position = default, float3 normal = default, Color color = default, float2 uv = default)
-        {
-            this.position = position;
-            this.normal = normal;
-            this.color = color;
-            this.uv = uv;
-        }
-    }
-    /// <summary>
-    /// Processes each cell in a chunk in parallel.
-    /// </summary>
-    [BurstCompile]
-    public struct MarchingCubesJob : IJobParallelFor
-    {
-
-        public ProfilerMarker marker;
-        public const float IsoValue = 0.5f;
-        [ReadOnly]
-        [NativeDisableParallelForRestriction]
-        public NativeArray<MarchingCubeChunk> cubeChunks;
-
-        [ReadOnly]
-        public NativeArray<int2> cellOffsets;
-        [NativeDisableParallelForRestriction]
-        public Mesh.MeshDataArray meshDataArray;
-        public unsafe void Execute(int index)
-        {
-
-            var chunkIndex = index / (MarchingCubes.ChunkCubeSizeInCells);
-            var chunk = cubeChunks[chunkIndex];
-            int3 cell = math.int3(
-                            ((index % MarchingCubes.ChunkCubeSizeInCells) % MarchingCubes.ChunkLayerSizeInCells) % (MarchingCubes.ChunkSizeInCells),
-                            (index % MarchingCubes.ChunkCubeSizeInCells) / MarchingCubes.ChunkLayerSizeInCells,
-                            ((index % MarchingCubes.ChunkCubeSizeInCells) % MarchingCubes.ChunkLayerSizeInCells) / (MarchingCubes.ChunkSizeInCells)
-                        );
-            int3 accessCell = cell + 1;
-            var cubeCase = chunk[accessCell];
-
-            if (cubeCase == 0 || cubeCase == 255)
-            {
-                return;
-            }
-            var meshData = meshDataArray[chunkIndex];
-            MarchingCubes.GetCellData(MarchingCubes.CellClassData[cubeCase], out var cellData);
-            var offsets = cellOffsets[index];
-            var indexData = meshData.GetIndexData<ushort>();
-            var vertexData = meshData.GetVertexData<MCCubeVertexInfo>();
-            for (int i = 0; i < 12 && MarchingCubes.VertexData[cubeCase * 12 + i] != 0; i++)
-            {
-                var edgeInfo = MarchingCubes.VertexData[cubeCase * 12 + i];
-                var vertexLowIndex = edgeInfo & 15;
-                var vertexHighIndex = (edgeInfo & 240) >> 4;
-                MarchingCubes.GetVertex(vertexLowIndex, out int3 vertexLow);
-                MarchingCubes.GetVertex(vertexHighIndex, out int3 vertexHigh);
-                var vertex = cell + math.lerp(vertexLow, vertexHigh, IsoValue);
-                var normal = math.normalize(math.lerp(chunk.GetNormal(accessCell, vertexLowIndex), chunk.GetNormal(accessCell, vertexHighIndex), IsoValue));
-                vertexData[offsets.y + i] = new MCCubeVertexInfo(vertex, normal, new Color32(196, 250, 98, 255));
-            }
-            var triCount = cellData.GetTriangleCount();
-            for (int i = 0; i < triCount; i++)
-            {
-                indexData[(offsets.x * 3) + (i * 3)] = (ushort)(offsets.y + cellData[(i * 3) + MarchingCubes.TriangleWindingOrder[0]]);
-                indexData[(offsets.x * 3) + (i * 3) + 1] = (ushort)(offsets.y + cellData[(i * 3) + MarchingCubes.TriangleWindingOrder[1]]);
-                indexData[(offsets.x * 3) + (i * 3) + 2] = (ushort)(offsets.y + cellData[(i * 3) + MarchingCubes.TriangleWindingOrder[2]]);
-            }
-
-        }
-    }
-
-    public struct MCChunkInfo
-    {
-        public int triangleCount;
-        public int vertexCount;
-    }
     public unsafe struct MarchingCubeChunk
     {
-        internal fixed byte value[MarchingCubes.PaddedChunkCubeSizeInCells];
+        internal fixed byte value[MarchingCubes.PaddedChunkBoxSizeInCells];
         public byte this[int index]
         {
             get => value[index];
@@ -623,66 +454,20 @@ namespace NeroWeNeed.Terrain
         }
         public byte this[int x, int y, int z]
         {
-            get => value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkSizeInCells + x];
+            get => value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkHorizontalSpanInCells + x];
             set
             {
-                this.value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkSizeInCells + x] = value;
+                this.value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkHorizontalSpanInCells + x] = value;
             }
         }
         public byte this[int3 cell]
         {
-            get => value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkSizeInCells + cell.x];
+            get => value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkHorizontalSpanInCells + cell.x];
             set
             {
-                this.value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkSizeInCells + cell.x] = value;
+                this.value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkHorizontalSpanInCells + cell.x] = value;
             }
-        }
-        public FullMarchingCubeChunk SetChunkLocation(int2 chunk) => new FullMarchingCubeChunk
-        {
-            chunk = chunk,
-            data = this
-        };
-        public float3 GetNormal(int3 cell, int vertex)
-        {
-            byte b = (byte)(1 << vertex);
-            var xN = ((this[cell.x + 1, cell.y, cell.z] & b) != 0) ? 1 : 0;
-            var xP = ((this[cell.x - 1, cell.y, cell.z] & b) != 0) ? 1 : 0;
-            var yN = ((this[cell.x, cell.y + 1, cell.z] & b) != 0) ? 1 : 0;
-            var yP = ((this[cell.x, cell.y - 1, cell.z] & b) != 0) ? 1 : 0;
-            var zN = ((this[cell.x, cell.y, cell.z + 1] & b) != 0) ? 1 : 0;
-            var zP = ((this[cell.x, cell.y, cell.z - 1] & b) != 0) ? 1 : 0;
-            return math.float3(xP - xN, yP - yN, zP - zN) * 0.5f;
         }
 
-    }
-
-    public unsafe struct FullMarchingCubeChunk
-    {
-        public int2 chunk;
-        internal MarchingCubeChunk data;
-        public byte this[int index]
-        {
-            get => data.value[index];
-            set
-            {
-                data.value[index] = value;
-            }
-        }
-        public byte this[int x, int y, int z]
-        {
-            get => data.value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkSizeInCells + x];
-            set
-            {
-                data.value[y * MarchingCubes.PaddedChunkLayerSizeInCells + z * MarchingCubes.PaddedChunkSizeInCells + x] = value;
-            }
-        }
-        public byte this[int3 cell]
-        {
-            get => data.value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkSizeInCells + cell.x];
-            set
-            {
-                data.value[cell.y * MarchingCubes.PaddedChunkLayerSizeInCells + cell.z * MarchingCubes.PaddedChunkSizeInCells + cell.x] = value;
-            }
-        }
     }
 }

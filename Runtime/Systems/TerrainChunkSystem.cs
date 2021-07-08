@@ -18,6 +18,7 @@ namespace NeroWeNeed.Terrain
             [ReadOnly]
             public ComponentTypeHandle<LocalToWorld> localToWorldHandle;
             public NativeHashMap<int2, int> chunks;
+            public float cellScale;
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
             {
                 var chunkLoaders = batchInChunk.GetNativeArray(chunkLoaderHandle);
@@ -27,8 +28,8 @@ namespace NeroWeNeed.Terrain
                     var radius = chunkLoaders[i].radius;
                     var ltw = localToWorlds[i].Position;
                     int2 chunk = math.int2(
-                        ((int)(ltw.x < 0 ? ltw.x - MarchingCubes.ChunkSizeInCells : ltw.x)) / MarchingCubes.ChunkSizeInCells,
-                        ((int)(ltw.z < 0 ? ltw.z - MarchingCubes.ChunkSizeInCells : ltw.z)) / MarchingCubes.ChunkSizeInCells
+                        (int)((ltw.x < 0 ? ltw.x - MarchingCubes.ChunkHorizontalSpanInCells : ltw.x) / (MarchingCubes.ChunkHorizontalSpanInCells*cellScale)),
+                        (int)((ltw.z < 0 ? ltw.z - MarchingCubes.ChunkHorizontalSpanInCells : ltw.z) / (MarchingCubes.ChunkHorizontalSpanInCells*cellScale))
                         );
 
                     for (int y = chunk.y - radius; y <= chunk.y + radius; y++)
@@ -72,6 +73,7 @@ namespace NeroWeNeed.Terrain
             loadedChunks = new NativeHashMap<int2, int>(32, Allocator.Persistent);
             loadedChunkVersion = new NativeReference<int>(Allocator.Persistent);
             terrainGPUDispatchSystem = World.GetOrCreateSystem<TerrainGPUDispatchSystem>();
+            RequireSingletonForUpdate<TerrainCellScale>();
         }
         protected override void OnUpdate()
         {
@@ -80,7 +82,8 @@ namespace NeroWeNeed.Terrain
             {
                 chunkLoaderHandle = GetComponentTypeHandle<ChunkLoader>(true),
                 localToWorldHandle = GetComponentTypeHandle<LocalToWorld>(true),
-                chunks = loadedChunks
+                chunks = loadedChunks,
+                cellScale = GetSingleton<TerrainCellScale>()
             }.Schedule(query, Dependency);
             Dependency = new CalculateChunkSetVersion
             {
@@ -92,6 +95,7 @@ namespace NeroWeNeed.Terrain
         public void WaitForCompletion() {
             Dependency.Complete();
         }
+        public bool IsCompleted() => Dependency.IsCompleted;
         public int GetLoadedChunkSetVersion() => loadedChunkVersion.Value;
         public NativeArray<int2> GetLoadedChunks(Allocator allocator = Allocator.TempJob) => loadedChunks.GetKeyArray(allocator);
         protected override void OnDestroy()
