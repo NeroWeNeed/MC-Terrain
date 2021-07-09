@@ -458,7 +458,6 @@ namespace NeroWeNeed.Terrain
         {
             terrainChunkSystem.WaitForCompletion();
             ChunkDataHandle.Complete();
-
             var version = terrainChunkSystem.GetLoadedChunkSetVersion();
             if (lastVersion != version)
             {
