@@ -462,62 +462,65 @@ namespace NeroWeNeed.Terrain
             if (lastVersion != version)
             {
                 int chunkCount = (chunkDataBuffer.Length / (sizeof(MarchingCubeChunk) + sizeof(int2)));
-                if (ChunkData == null)
+                if (chunkCount > 0)
                 {
-                    ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
-                    computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
-                }
-                else if (ChunkData.count < chunkDataBuffer.Length)
-                {
-                    ChunkData.Release();
-                    ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
-                    computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
-                }
-                if (VertexBuffer == null)
-                {
-                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
-                    MaterialProperties.SetBuffer(VericesId, VertexBuffer);
-                    computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
-                }
-                else if (VertexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
-                {
-                    VertexBuffer.Release();
-                    VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
-                    MaterialProperties.SetBuffer(VericesId, VertexBuffer);
-                    computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
-                }
-                if (NormalBuffer == null)
-                {
-                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
-                    MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
-                    computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
-                }
-                else if (NormalBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
-                {
-                    NormalBuffer.Release();
-                    NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
-                    MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
-                    computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
-                }
-                if (IndexBuffer == null)
-                {
-                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
-                    computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
-                }
-                else if (IndexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15))
-                {
-                    IndexBuffer.Release();
-                    IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
-                    computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
-                }
+                    if (ChunkData == null)
+                    {
+                        ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
+                        computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
+                    }
+                    else if (ChunkData.count < chunkDataBuffer.Length)
+                    {
+                        ChunkData.Release();
+                        ChunkData = new GraphicsBuffer(GraphicsBuffer.Target.Raw, chunkDataBuffer.Length / 4, 4);
+                        computeShader.SetBuffer(kernal, ChunkDataId, ChunkData);
+                    }
+                    if (VertexBuffer == null)
+                    {
+                        VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
+                        MaterialProperties.SetBuffer(VericesId, VertexBuffer);
+                        computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
+                    }
+                    else if (VertexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
+                    {
+                        VertexBuffer.Release();
+                        VertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3));
+                        MaterialProperties.SetBuffer(VericesId, VertexBuffer);
+                        computeShader.SetBuffer(kernal, VericesId, VertexBuffer);
+                    }
+                    if (NormalBuffer == null)
+                    {
+                        NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
+                        MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
+                        computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
+                    }
+                    else if (NormalBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12))
+                    {
+                        NormalBuffer.Release();
+                        NormalBuffer = new ComputeBuffer(chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 12), sizeof(float3), ComputeBufferType.Structured);
+                        MaterialProperties.SetBuffer(NormalsId, NormalBuffer);
+                        computeShader.SetBuffer(kernal, NormalsId, NormalBuffer);
+                    }
+                    if (IndexBuffer == null)
+                    {
+                        IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
+                        computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
+                    }
+                    else if (IndexBuffer.count < chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15))
+                    {
+                        IndexBuffer.Release();
+                        IndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, chunkCount * (MarchingCubes.ChunkBoxSizeInCells * 15), sizeof(uint));
+                        computeShader.SetBuffer(kernal, IndicesId, IndexBuffer);
+                    }
 
-                ChunkData.SetData<byte>(chunkDataBuffer);
-                DrawArguments.SetData(InitialDrawArguments);
-                ChunkArguments.SetData(InitialChunkArguments);
-                computeShader.SetFloat(IsoValueId, GetSingleton<TerrainIsoValue>());
-                computeShader.SetFloat(CellScaleId, GetSingleton<TerrainCellScale>());
-                computeShader.Dispatch(kernal, chunkCount, 1, 1);
-                lastVersion = version;
+                    ChunkData.SetData<byte>(chunkDataBuffer);
+                    DrawArguments.SetData(InitialDrawArguments);
+                    ChunkArguments.SetData(InitialChunkArguments);
+                    computeShader.SetFloat(IsoValueId, GetSingleton<TerrainIsoValue>());
+                    computeShader.SetFloat(CellScaleId, GetSingleton<TerrainCellScale>());
+                    computeShader.Dispatch(kernal, chunkCount, 1, 1);
+                    lastVersion = version;
+                }
             }
 
         }

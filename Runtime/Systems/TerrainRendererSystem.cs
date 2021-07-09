@@ -21,8 +21,12 @@ namespace NeroWeNeed.Terrain
         }
         protected unsafe override void OnUpdate()
         {
-            var material = EntityManager.GetSharedComponentData<TerrainMaterial>(GetSingletonEntity<TerrainMaterial>()).value;
-            Graphics.DrawProceduralIndirect(material, terrainGPUDispatchSystem.terrainBounds.Value, MeshTopology.Triangles, terrainGPUDispatchSystem.IndexBuffer, terrainGPUDispatchSystem.DrawArguments, 0, null, terrainGPUDispatchSystem.MaterialProperties, UnityEngine.Rendering.ShadowCastingMode.On, true, 0);
+            if (terrainGPUDispatchSystem.IndexBuffer != null)
+            {
+                var material = EntityManager.GetSharedComponentData<TerrainMaterial>(GetSingletonEntity<TerrainMaterial>()).value;
+                Graphics.DrawProceduralIndirect(material, terrainGPUDispatchSystem.terrainBounds.Value, MeshTopology.Triangles, terrainGPUDispatchSystem.IndexBuffer, terrainGPUDispatchSystem.DrawArguments, 0, null, terrainGPUDispatchSystem.MaterialProperties, UnityEngine.Rendering.ShadowCastingMode.On, true, 0);
+
+            }
         }
     }
 }
