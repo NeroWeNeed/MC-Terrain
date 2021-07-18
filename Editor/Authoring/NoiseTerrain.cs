@@ -1,12 +1,14 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Physics.Authoring;
 using UnityEngine;
 namespace NeroWeNeed.Terrain.Editor
 {
     public class NoiseTerrain : MonoBehaviour, IConvertGameObjectToEntity
     {
-        public Material terrainMaterial;
+        public UnityEngine.Material terrainMaterial;
         public float cellScale = 1f;
         public float isoValue = 0.5f;
         public string storagePath;
@@ -29,10 +31,12 @@ namespace NeroWeNeed.Terrain.Editor
                 {
                     value = blob
                 });
+                
             }
 
         }
-        private BlobAssetReference<Terrain.TerrainSettingsData> Create(Allocator allocator = Allocator.Persistent) {
+        private BlobAssetReference<Terrain.TerrainSettingsData> Create(Allocator allocator = Allocator.Persistent)
+        {
             var builder = new BlobBuilder(Unity.Collections.Allocator.Temp);
             ref Terrain.TerrainSettingsData root = ref builder.ConstructRoot<TerrainSettingsData>();
             root.bounds = bounds;

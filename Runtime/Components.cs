@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -35,7 +36,8 @@ namespace NeroWeNeed.Terrain
         public static implicit operator TerrainCellScale(float value) => new TerrainCellScale(value);
         public static implicit operator float(TerrainCellScale component) => component.value;
     }
-    public struct TerrainChunkData : IBufferElementData {
+    public struct TerrainChunkData : IBufferElementData
+    {
         public int2 chunkLocation;
         public MarchingCubeChunk chunkValue;
     }
@@ -63,9 +65,34 @@ namespace NeroWeNeed.Terrain
         public static implicit operator TerrainIsoValue(float value) => new TerrainIsoValue(value);
         public static implicit operator float(TerrainIsoValue component) => component.value;
     }
-    
+
     public struct TerrainProducer : IComponentData { }
 
+    public struct TerrainBufferData : ISystemStateComponentData, IDisposable
+    {
+        public GCHandle vertexBuffer;
+        public GCHandle indexBuffer;
+        public GCHandle normalBuffer;
+        public GCHandle chunkDataBuffer;
+        public GCHandle drawArgumentBuffer;
+        public GCHandle chunkArgumentBuffer;
+
+        public unsafe void Dispose()
+        {
+            ((GraphicsBuffer)vertexBuffer.Target).Release();
+            vertexBuffer.Free();
+            ((GraphicsBuffer)indexBuffer.Target).Release();
+            indexBuffer.Free();
+            ((GraphicsBuffer)normalBuffer.Target).Release();
+            normalBuffer.Free();
+            ((GraphicsBuffer)chunkDataBuffer.Target).Release();
+            chunkDataBuffer.Free();
+            ((GraphicsBuffer)drawArgumentBuffer.Target).Release();
+            drawArgumentBuffer.Free();
+            ((GraphicsBuffer)chunkArgumentBuffer.Target).Release();
+            chunkArgumentBuffer.Free();
+        }
+    }
 
 
     [Serializable]
@@ -97,11 +124,21 @@ namespace NeroWeNeed.Terrain
     {
         public int radius;
     }
-    public struct TerrainSettings : IComponentData {
+    public struct TerrainSettings : IComponentData
+    {
         public BlobAssetReference<TerrainSettingsData> value;
     }
     public struct RuntimeTerrainSettings : ISystemStateComponentData
     {
         public BlobAssetReference<RuntimeTerrainSettingsData> value;
     }
+    public interface IGraphicsBufferComponentData
+    {
+        public ulong Value { get; }
+    }
+    public interface IGraphicsBufferSizeComponentData
+    {
+        public int Value { get; }
+    }
+
 }

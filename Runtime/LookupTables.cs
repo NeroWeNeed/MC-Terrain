@@ -1,9 +1,11 @@
-#pragma kernel MarchingCubes
-#pragma enable_d3d11_debug_symbols
-#include "MCHeader.hlsl"
-static const int3 triangleWindingOrder = { 0,2,1 };
+using System;
+using UnityEngine;
 
-/* static const min16uint vertexData[1536] = {
+namespace NeroWeNeed.Terrain
+{
+    internal class MarchingCubesLookupTables : IDisposable
+    {
+        internal static readonly uint[] VertexTable = new uint[1536] {
     0x6201,
     0x5102,
     0x3304,
@@ -1540,8 +1542,8 @@ static const int3 triangleWindingOrder = { 0,2,1 };
     0x6201,
     0x3304,
     0x5102
-}; */
-/* static const uint vertexLookupTable[256] = {
+};
+        internal static readonly uint[] VertexLookupTable = new uint[256] {
     0,
     0,
     3,
@@ -1798,8 +1800,8 @@ static const int3 triangleWindingOrder = { 0,2,1 };
     1530,
     1533,
     1536
-}; */
-/* static const min16uint cellData[256] =  {
+};
+        internal static readonly uint[] CellTable = new uint[256]  {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0x31, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0x62, 0, 1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1816,8 +1818,8 @@ static const int3 triangleWindingOrder = { 0,2,1 };
     0x64, 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 0, 0,
     0x75, 0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6,
     0x95, 0, 4, 5, 0, 3, 4, 0, 1, 3, 1, 2, 3, 6, 7, 8,
-}; */
-/* static const min12int cellClassData[256] = {
+};
+        internal static readonly uint[] CellClassTable = new uint[256] {
     0x00, 0x01, 0x01, 0x03, 0x01, 0x03, 0x02, 0x04, 0x01, 0x02, 0x03, 0x04, 0x03, 0x04, 0x04, 0x03,
     0x01, 0x03, 0x02, 0x04, 0x02, 0x04, 0x06, 0x0C, 0x02, 0x05, 0x05, 0x0B, 0x05, 0x0A, 0x07, 0x04,
     0x01, 0x02, 0x03, 0x04, 0x02, 0x05, 0x05, 0x0A, 0x02, 0x06, 0x04, 0x0C, 0x05, 0x07, 0x0B, 0x04,
@@ -1835,86 +1837,41 @@ static const int3 triangleWindingOrder = { 0,2,1 };
     0x04, 0x07, 0x0A, 0x0E, 0x0B, 0x0E, 0x0E, 0x02, 0x0C, 0x0F, 0x04, 0x0D, 0x04, 0x0D, 0x03, 0x01,
     0x03, 0x04, 0x04, 0x03, 0x04, 0x03, 0x0D, 0x01, 0x04, 0x0D, 0x03, 0x01, 0x03, 0x01, 0x01, 0x00
 };
- */
+        internal static readonly int BufferSize = VertexTable.Length + VertexLookupTable.Length + CellTable.Length + CellClassTable.Length;
 
+        internal static readonly int VertexTableId = Shader.PropertyToID(nameof(VertexTable));
+        internal static readonly int VertexLookupTableId = Shader.PropertyToID(nameof(VertexLookupTable));
+        internal static readonly int CellTableId = Shader.PropertyToID(nameof(CellTable));
+        internal static readonly int CellClassTableId = Shader.PropertyToID(nameof(CellClassTable));
 
-//Chunk Data to process. All Chunk blocks are prefixed with an int2 denoting the chunk location.
-ByteAddressBuffer ChunkData;
-//How large a cell in a chunk is.
-float CellScale = 1;
-//Iso Value for finding vertices.
-float IsoValue = 0.5;
-//Output buffer for vertices
-RWStructuredBuffer<float3> Vertices;
-//Output buffer for normals
-RWStructuredBuffer<float3> Normals;
-//Output buffer for indices.
-RWStructuredBuffer<uint> Indices;
-//Output buffer for executing shader.
-RWStructuredBuffer<uint> Arguments;
+        public GraphicsBuffer VertexTableBuffer { get; }
+        public GraphicsBuffer VertexLookupTableBuffer { get; }
+        public GraphicsBuffer CellTableBuffer { get; }
+        public GraphicsBuffer CellClassTableBuffer { get; }
+        public MarchingCubesLookupTables()
+        {
+            VertexTableBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, VertexTable.Length, 4);
+            VertexTableBuffer.SetData(VertexTable);
+            VertexLookupTableBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, VertexLookupTable.Length, 4);
+            VertexLookupTableBuffer.SetData(VertexLookupTable);
+            CellTableBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, CellTable.Length, 4);
+            CellTableBuffer.SetData(CellTable);
+            CellClassTableBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, CellClassTable.Length, 4);
+            CellClassTableBuffer.SetData(CellClassTable);
+        }
+        public void SetBuffers(int kernal,ComputeShader shader) {
+            shader.SetBuffer(kernal, VertexTableId, VertexTableBuffer);
+            shader.SetBuffer(kernal, VertexLookupTableId, VertexLookupTableBuffer);
+            shader.SetBuffer(kernal, CellTableId, CellTableBuffer);
+            shader.SetBuffer(kernal, CellClassTableId, CellClassTableBuffer);
+        }
 
-StructuredBuffer<uint> VertexTable;
-StructuredBuffer<uint> VertexLookupTable;
-StructuredBuffer<uint> CellTable;
-StructuredBuffer<uint> CellClassTable;
-
-
-uint GetCube(uint3 cell,uint chunk) {
-    uint byteOffset = (cell.y)*(PADDED_CHUNK_LAYER) +
-                        (cell.z)*(PADDED_CHUNK_HORIZONTAL_SPAN) +
-                        (cell.x);
-    uint blockOffset = (byteOffset/4);
-    uint bitOffset = (byteOffset % 4);
-    return (ChunkData.Load((blockOffset*4)+(chunk*PADDED_CHUNK_DATA_SIZE)+CHUNKDATA_OFFSET) & (0xFF << (bitOffset*8))) >> (bitOffset*8);
-}
-float3 GetNormal(uint3 cell,uint chunk, int vertex) {
-    uint b = 1 << vertex;
-
-    uint2x3 cells = {
-        { (GetCube(uint3(cell.x-1,cell.y,cell.z),chunk) & b) != 0,(GetCube(uint3(cell.x,cell.y-1,cell.z),chunk) & b) != 0,(GetCube(uint3(cell.x,cell.y,cell.z-1),chunk) & b) != 0 },
-        { (GetCube(uint3(cell.x+1,cell.y,cell.z),chunk) & b) != 0,(GetCube(uint3(cell.x,cell.y+1,cell.z),chunk) & b) != 0,(GetCube(uint3(cell.x,cell.y,cell.z+1),chunk) & b) != 0 },
-    };
-    return ((int3)cells[0]-(int3)cells[1])*0.5;
-}
-
-[numthreads(CHUNK_HORIZONTAL_SPAN,CHUNK_VERTICAL_SPAN,CHUNK_HORIZONTAL_SPAN)]
-void MarchingCubes(uint3 groupThreadId : SV_GroupThreadID,uint3 groupId : SV_GroupID) {
-    uint chunkOffset = groupId.x*PADDED_CHUNK_DATA_SIZE;
-    uint3 cell = groupThreadId;
-    uint byteOffset = (cell.y+1)*(PADDED_CHUNK_LAYER) +
-                        (cell.z+1)*(PADDED_CHUNK_HORIZONTAL_SPAN) +
-                        (cell.x+1);
-    uint blockOffset = (byteOffset/4);
-    uint bitOffset = (byteOffset % 4);
-    int2 chunk = ChunkData.Load2(chunkOffset);
-    uint cube = (ChunkData.Load((blockOffset*4)+chunkOffset+CHUNKDATA_OFFSET) & (0xFF << (bitOffset*8))) >> (bitOffset*8);
-    if (cube == 0 || cube == 255) {
-        return;
-    }
-    uint cubeCellClassIndex = CellClassTable[cube];
-    uint totalVertices = (uint)((CellTable[cubeCellClassIndex*16] & 0xF0) >> 4);
-    uint totalTriangles = (uint)(CellTable[cubeCellClassIndex*16] & 0x0F);
-    uint edgeInfo;
-    uint vertexOffset = 0;
-    uint indexOffset = 0;
-    InterlockedAdd(Arguments[0],totalVertices,vertexOffset);
-    InterlockedAdd(Arguments[1],totalTriangles*3,indexOffset);
-    
-    for (uint i=0;i < totalVertices;i++) {
-        
-        
-        edgeInfo = VertexTable[VertexLookupTable[cube]+i];
-        
-        int vertexHighIndex = edgeInfo & 0x0F;
-        int vertexLowIndex = (edgeInfo & 0xF0) >> 4;
-        Vertices[vertexOffset+i] = (cell + lerp(vertexOrder[vertexLowIndex],vertexOrder[vertexHighIndex],IsoValue)  + float3(chunk.x*CHUNK_HORIZONTAL_SPAN,0,chunk.y*CHUNK_HORIZONTAL_SPAN))*CellScale;
-        Normals[vertexOffset+i] = lerp(GetNormal(cell+1,groupId.x,vertexLowIndex),GetNormal(cell+1,groupId.x,vertexHighIndex),IsoValue);
-    }
-    
-    for (uint j = 0;j < totalTriangles;j++) {
-        int offset = (((uint)cubeCellClassIndex)*16)+1+(j*3);
-        Indices[indexOffset+(j*3)] = vertexOffset + (uint)(CellTable[offset + triangleWindingOrder[0]]);
-        Indices[indexOffset+(j*3)+1] = vertexOffset + (uint)(CellTable[offset + triangleWindingOrder[1]]);
-        Indices[indexOffset+(j*3)+2] = vertexOffset + (uint)(CellTable[offset + triangleWindingOrder[2]]);
+        public void Dispose()
+        {
+            VertexLookupTableBuffer.Release();
+            VertexTableBuffer.Release();
+            CellClassTableBuffer.Release();
+            CellTableBuffer.Release();
+        }
     }
 }
