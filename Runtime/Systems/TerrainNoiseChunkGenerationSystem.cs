@@ -163,11 +163,11 @@ namespace NeroWeNeed.Terrain
                               p.z / ((float)MarchingCubes.ChunkHorizontalSpanInCells)
                             );
                             var sample1 = math.unlerp(-1, 1, noise.pnoise(math.float2(offset.x + targetChunkLocation.x, offset.z + targetChunkLocation.y), MarchingCubes.ChunkHorizontalSpanInCells));
-                            var sample2 = noise.cellular(math.float2(offset.x + targetChunkLocation.x, offset.z + targetChunkLocation.y)).x;
-                            var sample3 = noise.cellular(math.float3(offset.x + targetChunkLocation.x, offset.y, offset.z + targetChunkLocation.y)).x;
-                            var height = sample1 * 6;
+                            //var sample2 = noise.cellular(math.float2(offset.x + targetChunkLocation.x, offset.z + targetChunkLocation.y)).x;
+                            //var sample3 = noise.cellular(math.float3(offset.x + targetChunkLocation.x, offset.y, offset.z + targetChunkLocation.y)).x;
+                            //var height = sample1 * 6;
 
-                            if ((p.y < 1) || (p.y < sample1 * 12 && sample2 < 0.7f))
+                            if ((p.y < 1) || (p.y < sample1 * 4))
                             {
                                 cubeCase |= (byte)(1 << j);
                             }

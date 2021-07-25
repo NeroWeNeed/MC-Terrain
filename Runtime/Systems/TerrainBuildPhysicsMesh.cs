@@ -9,8 +9,8 @@ using UnityEngine.Rendering;
 namespace NeroWeNeed.Terrain
 {
     [UpdateInGroup(typeof(SimulationSystemGroup),OrderFirst =true)]
-    [UpdateBefore(typeof(FixedStepSimulationSystemGroup))]
-    [UpdateAfter(typeof(BeginSimulationEntityCommandBufferSystem))]
+    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))]
+    
     public class TerrainBuildPhysicsMesh : SystemBase
     {
         private int lastVersion = 0;
@@ -22,7 +22,7 @@ namespace NeroWeNeed.Terrain
         {
             terrainGPUDispatchSystem = World.GetOrCreateSystem<TerrainGPUDispatchSystem>();
             terrainRendererSystem = World.GetOrCreateSystem<TerrainRendererSystem>();
-            entityCommandBufferSystem = World.GetOrCreateSystem<BeginFixedStepSimulationEntityCommandBufferSystem>();
+            entityCommandBufferSystem = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
             RequireSingletonForUpdate<TerrainProducer>();
         }
         protected override void OnUpdate()
@@ -47,7 +47,7 @@ namespace NeroWeNeed.Terrain
                     if (HasComponent<PhysicsCollider>(entity))
                     {
                         var oldCollider = GetComponent<PhysicsCollider>(entity);
-                        oldCollider.Value.Dispose();
+                        //oldCollider.Value.Dispose();
                         ecb.SetComponent(entity, new PhysicsCollider
                         {
                             Value = Unity.Physics.MeshCollider.Create(vertices, indices)
